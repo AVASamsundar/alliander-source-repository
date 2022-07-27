@@ -1,0 +1,5 @@
+FROM alpine:3.7
+CMD ["/opt/grafana-configurator/wait-for", "grafana:3000", "--", "sh", "/opt/grafana-configurator/configurator.sh"]
+COPY ./grafana-configurator/volumes/config /opt/grafana-configurator
+ENV GRAFANA_USER=admin
+ENV GRAFANA_PASSWORD=admin

@@ -1,0 +1,5 @@
+FROM mysql:5.7
+COPY ./mysql/volumes/initdb /docker-entrypoint-initdb.d
+ENV MYSQL_ROOT_PASSWORD=root
+ENV MYSQL_DATABASE=tst_icarus
+EXPOSE 3306

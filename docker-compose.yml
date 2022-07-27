@@ -1,0 +1,77 @@
+version: "3.7"
+services:
+  influxdb:
+    image: influxdb:1.7.3-alpine
+    container_name: openstf-influxdb
+    volumes:
+      - ./influxdb/volumes/initdb:/docker-entrypoint-initdb.d
+    environment:
+      INFLUXDB_FORECASTS_DB_NAME: forecast_latest
+      INFLUXDB_REALISED_DB_NAME: realised
+      INFLUXDB_HTTP_MAX_BODY_SIZE: 0
+    ports:
+      - 8086:8086
+  mysql:
+    image: mysql:5.7
+    container_name: openstf-mysql
+    volumes:
+      - ./mysql/volumes/initdb:/docker-entrypoint-initdb.d
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: tst_icarus
+    ports:
+      - 3306:3306
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: openstf-phpmyadmin
+    environment:
+      PMA_HOST: mysql
+    ports:
+      - 8080:80
+  grafana:
+    image: grafana/grafana:7.5.1
+    container_name: openstf-grafana
+    ports:
+      - 3000:3000
+    environment:
+      GF_PANELS_DISABLE_SANITIZE_HTML: "true"
+  grafana-configurator:
+    image: alpine:3.7
+    container_name: openstf-grafana-configurator
+    depends_on:
+      - "grafana"
+    command: ["/opt/grafana-configurator/wait-for", "grafana:3000", "--", "sh", "/opt/grafana-configurator/configurator.sh"]
+    volumes:
+      - ./grafana-configurator/volumes/config:/opt/grafana-configurator
+    environment:
+      GRAFANA_USER: admin
+      GRAFANA_PASSWORD: admin
+  influx-configurator:
+    image: python:3.9
+    container_name: openstf-influx-configurator
+    depends_on:
+      - "influxdb"
+    command: >
+      sh -c "apt-get update &&
+      pip install --upgrade pip &&
+      apt-get install make automake gcc g++ subversion python3-dev &&      
+      pip install pandas influxdb-client openstf-dbc &&
+      cd /opt/influxdb-configurator/ &&
+      python load_data_to_influx.py
+      "
+    volumes:
+      - ./influxdb-configurator:/opt/influxdb-configurator
+    build:
+      context: .
+      shm_size: '250mb'
+  nginx:
+    image: nginx
+    container_name: openstf-nginx
+    volumes:
+      - ./nginx/volumes/config/conf.d/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/volumes/data:/usr/share/nginx/html
+    ports:
+      - "8090:80"
+    environment:
+      - NGINX_HOST=foobar.com
+      - NGINX_PORT=80

@@ -1,0 +1,6 @@
+FROM influxdb:1.7.3-alpine
+COPY ./influxdb/volumes/initdb /docker-entrypoint-initdb.d
+ENV INFLUXDB_FORECASTS_DB_NAME=forecast_latest
+ENV INFLUXDB_REALISED_DB_NAME=realised
+ENV INFLUXDB_HTTP_MAX_BODY_SIZE=0
+EXPOSE 8086
