@@ -1,6 +1,6 @@
 FROM nginx
-COPY ./nginx/volumes/config/conf.d/default.conf /etc/nginx/conf.d/default.conf
-COPY ./nginx/volumes/data /usr/share/nginx/html
+COPY ./source/nginx/volumes/config/conf.d/default.conf /etc/nginx/conf.d/default.conf
+COPY ./source/nginx/volumes/data /usr/share/nginx/html
 ENV NGINX_HOST=foobar.com
 ENV NGINX_PORT=80
 EXPOSE 80
